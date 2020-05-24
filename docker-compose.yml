@@ -1,0 +1,48 @@
+version: '3'
+services:
+  myapp:
+    build: ./myapp
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    volumes:
+      - ./myapp:/myapp
+    ports:
+      - "3000:3000"
+    environment:
+     - DD_AGENT_HOST=dd
+     - DATABASE_URL=postgres://myappdbusr:myappdbpwd@db/myapp_development
+    depends_on:
+      - db
+    networks:
+      - overlay
+
+  db:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - pgdata:/var/lib/postgresql/data/pgdata
+    networks:
+      - overlay
+
+  dd:
+    image: datadog/agent:latest
+    environment:
+     - DD_API_KEY
+     - DD_APM_ENABLED=true
+     - DD_APM_NON_LOCAL_TRAFFIC=true
+     - DD_HOSTNAME=dd-docker-poc
+    volumes:
+     - /var/run/docker.sock:/var/run/docker.sock:ro
+     - /proc/:/host/proc/:ro
+     - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
+    networks:
+     - overlay
+
+volumes:
+  pgdata:
+
+networks:
+  overlay:
