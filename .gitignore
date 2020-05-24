@@ -1,2 +1,2 @@
 myapp/log/*.log
-myapp/tmp/**
+myapp/tmp/pids/*.pid
