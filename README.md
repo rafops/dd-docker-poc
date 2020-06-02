@@ -12,7 +12,7 @@ export DD_API_KEY=…
 
 ```
 docker-compose build --no-cache --pull
-docker-compose up
+docker-compose --compatibility up
 ```
 
 ## Create database and user for myapp
