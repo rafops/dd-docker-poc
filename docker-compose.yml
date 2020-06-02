@@ -1,6 +1,6 @@
 version: '3'
 services:
-  myapp:
+  app:
     build: ./myapp
     command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
     volumes:
@@ -8,12 +8,20 @@ services:
     ports:
       - "3000:3000"
     environment:
-     - DD_AGENT_HOST=dd
+     - WEB_CONCURRENCY=10
+     - RAILS_MAX_THREADS=5
+     - RAILS_ENV=development
      - DATABASE_URL=postgres://myappdbusr:myappdbpwd@db/myapp_development
+     - DD_AGENT_HOST=dd
     depends_on:
       - db
     networks:
       - overlay
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 640m
 
   db:
     image: postgres
@@ -26,6 +34,11 @@ services:
       - pgdata:/var/lib/postgresql/data/pgdata
     networks:
       - overlay
+    deploy:
+      resources:
+        limits:
+          cpus: '0.20'
+          memory: 128m
 
   dd:
     image: datadog/agent:latest
@@ -34,12 +47,18 @@ services:
      - DD_APM_ENABLED=true
      - DD_APM_NON_LOCAL_TRAFFIC=true
      - DD_HOSTNAME=dd-docker-poc
+     - DD_LOG_LEVEL=warn
     volumes:
      - /var/run/docker.sock:/var/run/docker.sock:ro
      - /proc/:/host/proc/:ro
      - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
     networks:
      - overlay
+    deploy:
+      resources:
+        limits:
+          cpus: '0.046875'
+          memory: 128m
 
 volumes:
   pgdata:

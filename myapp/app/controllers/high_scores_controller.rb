@@ -4,7 +4,7 @@ class HighScoresController < ApplicationController
   # GET /high_scores
   # GET /high_scores.json
   def index
-    @high_scores = HighScore.all
+    @high_scores = HighScore.where('score > 8192').where('score < 24576').where("created_at > '#{2.minutes.ago}'").where("created_at <= '#{1.minute.ago}'").order(score: :desc, game: :asc).limit(50)
   end
 
   # GET /high_scores/1
